@@ -403,6 +403,16 @@ net user administrator /active:yes
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
+#Taskbar hide search button
+Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search -Name SearchBoxTaskbarMode -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Taskbar hide cortana button
+Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowCortanaButton -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
 # Create system backup on drive D
 wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 
