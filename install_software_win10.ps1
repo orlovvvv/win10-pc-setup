@@ -16,7 +16,7 @@ Write-Host "Elevate powershell instance"
             -ArgumentList (
                 #flatten to single array
                 '-File', $MyInvocation.MyCommand.Source, $args `
-                | %{ $_ }
+                | ForEach-Object{ $_ }
             ) `
             -Verb RunAs
         exit
@@ -24,6 +24,12 @@ Write-Host "Elevate powershell instance"
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
+# File explorer default view to This PC
+Write-Host "Changing default Explorer view to This PC..."
+    $ResultText.text += "`r`n" +"Quality of Life Tweaks"
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
+
+#--------------------------------------------------------------------------------------------------------------------------------------
 # Check if winget is installed
 Write-Host "Checking winget"
     if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe){
@@ -135,7 +141,7 @@ foreach ($Bloat in $Bloatware) {
 
 # Software installation for PCs in SPZOZ Parczew
 Write-Host "Installing chocolatey"
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 Update-SessionEnvironment
 
 Write-Host "Installation of software for computers in SPZOZ w Parczewie (No MSOffice, No NAPS2)"
@@ -272,7 +278,7 @@ foreach ($service in $services) {
 
     $running = Get-Service -Name $service -ErrorAction SilentlyContinue | Where-Object {$_.Status -eq 'Running'}
     $waitUntilDisabled = 0;
-    if ($running & $waitUntilDisabled < 10 ) { 
+    if ($running) { 
         Write-Host "Stopping $service"
         Stop-Service -Name $service
         $waitUntilDisabled++;
@@ -404,15 +410,44 @@ net user administrator /active:yes
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 #Taskbar hide search button
-Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search -Name SearchBoxTaskbarMode -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name SearchBoxTaskbarMode -Value 0 -Type DWord -Force
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 #Taskbar hide cortana button
-Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowCortanaButton -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name ShowCortanaButton -Value 0 -Type DWord -Force
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
+#Disable recent files history
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name Start_TrackDocs -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Remove suggested apps
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name SystemPaneSuggestionsEnabled -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Disable recently installed programs from start menu list
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name HideRecentlyAddedApps -Value 1 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Show all trray icons
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name EnableAutoTray -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+# Checks for path, the Explorer is needed in Policies
+If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer")) {
+    New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Force | Out-Null
+}
+
+#Taskbar system icons
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name DisableNotificationCenter -Value 0 -Type DWord -Force
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Type DWord -Value 1
+
+#--------------------------------------------------------------------------------------------------------------------------------------
 # Create system backup on drive D
 wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 
