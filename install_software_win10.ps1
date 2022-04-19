@@ -63,7 +63,7 @@ $Bloatware = @(
     "Microsoft.Microsoft3DViewer"
     "Microsoft.MicrosoftSolitaireCollection"
     "Microsoft.NetworkSpeedTest"
-    "Microsoft.News"
+    "*News*"
     "Microsoft.Office.Lens"
     "Microsoft.Office.Sway"
     "Microsoft.Office.OneNote"
@@ -175,6 +175,11 @@ netsh advfirewall firewall add rule name="WAKE ON LAN" protocol=UDP localport=9 
 netsh advfirewall firewall set rule group="Pulpit zdalny" new enable=no
 
 Write-Host "Firewall rules applied"
+ 
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Enable network discovery on private profile
+Get-NetFirewallRule -DisplayGroup 'Network Discovery'|Set-NetFirewallRule -Profile 'Private' -Enabled true
 
 #--------------------------------------------------------------------------------------------------------------------------------------
  
@@ -266,12 +271,14 @@ foreach ($service in $services) {
     Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled
 
     $running = Get-Service -Name $service -ErrorAction SilentlyContinue | Where-Object {$_.Status -eq 'Running'}
-    if ($running) { 
+    $waitUntilDisabled = 0;
+    if ($running & $waitUntilDisabled < 10 ) { 
         Write-Host "Stopping $service"
         Stop-Service -Name $service
+        $waitUntilDisabled++;
     }
 }
- 
+
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 #Diable Action Center 
@@ -321,6 +328,87 @@ Write-Host "Showing tray icons"
 # Disable hibernation
 Write-Host "Disable hibernation"
     powercfg /h off
+Write-Host "Hibernation disabled"
 
+Write-Host "Disable sleep"
+    Powercfg /Change monitor-timeout-ac 5
+    Powercfg /Change monitor-timeout-dc 0
+    Powercfg /Change standby-timeout-ac 0
+    Powercfg /Change standby-timeout-dc 0    
+Write-Host "Sleep disabled"
+
+Write-Host "Disable Hiberboot"
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power" /V HiberbootEnabled /T REG_dWORD /D 1 /F
+Write-Host "Hiberboot disabled"
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Set pagefile size on D and delete the one on C
+Write-Host "Disabling system managed pagefile"
+$sys = Get-WmiObject Win32_Computersystem -EnableAllPrivileges
+$sys.AutomaticManagedPagefile = $false
+$sys.put()
+Write-Host "System managed pagefile disabled"
+
+Write-Host "Setting up pagefile on D"
+$Pagefile = Get-WmiObject Win32_PagefileSetting
+$pagefile.Name = "D:\pagefile.sys"
+$pagefile.Caption = "D:\pagefile.sys"
+$pagefile.Description = "'pagefile.sys' @ D:\"
+$pagefile.SettingID ="pagefile.sys @ D:"
+$pagefile.InitialSize = 8192
+$pagefile.MaximumSize = 8192
+$pagefile.put()
+Write-Host "Pagefile has been set"
+
+Write-Host "Deleting pagefile on C"
+$pagefile = Get-WmiObject Win32_PagefileSetting | Where-Object {$_.name -eq "C:\pagefile.sys"}
+$pagefile.delete()
+Write-Host "Pagefile on C deleted"
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Disalbe Autorun
+$path ='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\Explorer'
+Set-ItemProperty $path -Name NoDriveTypeAutorun -Type DWord -Value 0xFF
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Remove unwanted default printers
+Remove-Printer -Name "Microsoft XPS Document Writer"
+Remove-Printer -Name "Fax"
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Disable IPv6
+Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Set screensaver to active and 5 min with login set as required
+Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name ScreenSaveActive -Value 1
+Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name ScreenSaveTimeOut -Value 5
+Function Set-OnResumeDisplayLogon
+{
+    Param ([Int32]$value)
+    [Int32]$nullVar = 0
+    $systemParamInfo::SystemParametersInfo(119, $value, [REF]$nullVar, 2)
+}
+Set-OnResumeDisplayLogon(1)
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# enable Administrator account
+net user administrator /active:yes
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# Create system backup on drive D
+wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# For getting the device MAC Address
+Get-NetAdapter
 Pause
 
