@@ -276,13 +276,6 @@ foreach ($service in $services) {
     Write-Host "Setting $service StartupType to disabled"
     Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled
 
-    $running = Get-Service -Name $service -ErrorAction SilentlyContinue | Where-Object {$_.Status -eq 'Running'}
-    $waitUntilDisabled = 0;
-    if ($running) { 
-        Write-Host "Stopping $service"
-        Stop-Service -Name $service
-        $waitUntilDisabled++;
-    }
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
