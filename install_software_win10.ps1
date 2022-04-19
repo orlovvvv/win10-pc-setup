@@ -422,3 +422,7 @@ wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 Get-NetAdapter
 Pause
 
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+# After all is done restart the PC
+Restart-Computer
