@@ -97,7 +97,7 @@ netsh advfirewall firewall add rule name="ALL ICMP v4 ping echo request" protoco
 
 netsh advfirewall firewall add rule name="WAKE ON LAN" protocol=UDP localport=9 dir=in action=allow
 
-netsh advfirewall firewall set rule group="Pulpit zdalny" new enable=no
+netsh advfirewall firewall set rule group="remote desktop" new enable=No
 
 Write-Host "Firewall rules applied"
  
