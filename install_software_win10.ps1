@@ -302,9 +302,9 @@ Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 # Set screensaver to active and 5 min with login set as required
-Set-ItemProperty -Path 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop\' -Name ScreenSaveTimeOut -Value 5
-Set-ItemProperty -Path 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop\' -Name ScreenSaveActive -Value 1
-Set-ItemProperty -Path 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop\' -Name ScreenSaverIsSecure -Value 1
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveTimeOut -Value 300
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveActive -Value 1
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaverIsSecure -Value 1
 Function Set-OnResumeDisplayLogon
 {
     Param ([Int32]$value)
@@ -325,7 +325,7 @@ Write-Host "Installing chocolatey"
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 Update-SessionEnvironment
 
-Write-Host "Installation of software for computers in SPZOZ w Parczewie (No MSOffice, No NAPS2)"
+Write-Host "Installation of software for computers in SPZOZ w Parczewie (No MSOffice)"
 choco feature enable -n allowGlobalConfirmation
 #   Adobe Reader
 choco install adobereader
@@ -344,7 +344,7 @@ choco install tightvnc
 #   LibreOffice Stable
 choco install libreoffice-still
 #   NAPS2
-#choco install naps2
+choco install naps2
 
 choco feature disable -n allowGlobalConfirmation
 
