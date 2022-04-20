@@ -51,7 +51,7 @@ $Bloatware = @(
     "Microsoft.YourPhone"
     "Microsoft.Getstarted"
     "*Office*"
-    "*OneDrive*"
+    "*Spotify*"
     "*EclipseManager*"
     "*ActiproSoftwareLLC*"
     "*AdobeSystemsIncorporated.AdobePhotoshopExpress*"
@@ -75,7 +75,8 @@ $Bloatware = @(
     "*HiddenCityMysteryofShadows*"
     "*Hulu*"
     "*HiddenCity*"
-    "*AdobePhotoshopExpress*"
+    "*Photoshop*"
+    "*Adobe*"
     "*HotspotShieldFreeVPN*"
     "*Microsoft.Advertising.Xaml*"
 )
@@ -241,7 +242,7 @@ Write-Host "Showing tray icons"
      
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-# Disable hibernation
+# Disable hibernation and hiperboot/faststartup
 Write-Host "Disable hibernation"
     powercfg /h off
 Write-Host "Hibernation disabled"
@@ -304,7 +305,28 @@ Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveTimeOut -Value 300
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveActive -Value 1
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaverIsSecure -Value 1
+#Taskbar hide search button
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name SearchBoxTaskbarMode -Value 0 -Type DWord -Force
 
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Taskbar hide cortana button
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name ShowCortanaButton -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Disable recent files history
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name Start_TrackDocs -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Remove suggested apps
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name SystemPaneSuggestionsEnabled -Value 0 -Type DWord -Force
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+
+#Disable recently installed programs from start menu list
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name HideRecentlyAddedApps -Value 1 -Type DWord -Force
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 # enable Administrator account
