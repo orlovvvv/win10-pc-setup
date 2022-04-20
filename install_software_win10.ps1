@@ -304,13 +304,6 @@ Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveTimeOut -Value 300
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveActive -Value 1
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaverIsSecure -Value 1
-Function Set-OnResumeDisplayLogon
-{
-    Param ([Int32]$value)
-    [Int32]$nullVar = 0
-    $systemParamInfo::SystemParametersInfo(119, $value, [REF]$nullVar, 2)
-}
-Set-OnResumeDisplayLogon(1)
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
