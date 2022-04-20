@@ -1,52 +1,3 @@
-
-#Elevate powershell instance to enable changes to system
-Write-Host "Elevate powershell instance"
-    if (!
-        #current role
-        (New-Object Security.Principal.WindowsPrincipal(
-            [Security.Principal.WindowsIdentity]::GetCurrent()
-        #is admin?
-        )).IsInRole(
-            [Security.Principal.WindowsBuiltInRole]::Administrator
-        )
-    ) {
-        #elevate script and exit current non-elevated runtime
-        Start-Process `
-            -FilePath 'powershell' `
-            -ArgumentList (
-                #flatten to single array
-                '-File', $MyInvocation.MyCommand.Source, $args `
-                | ForEach-Object{ $_ }
-            ) `
-            -Verb RunAs
-        exit
-    }
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-# File explorer default view to This PC
-Write-Host "Changing default Explorer view to This PC..."
-    $ResultText.text += "`r`n" +"Quality of Life Tweaks"
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-# Check if winget is installed
-Write-Host "Checking winget"
-    if (Test-Path ~\AppData\Local\Microsoft\WindowsApps\winget.exe){
-        'Winget Already Installed'
-    }  
-    else{
-        # Installing winget from the Microsoft Store
-        Write-Host "Winget not found, installing it now."
-        $ResultText.text = "`r`n" +"`r`n" + "Installing Winget... Please Wait"
-        Start-Process "ms-appinstaller:?source=https://aka.ms/getwinget"
-        $nid = (Get-Process AppInstaller).Id
-        Wait-Process -Id $nid
-        Write-Host Winget Installed
-    }
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
 $Bloatware = @(
 
     "Microsoft.3DBuilder"
@@ -137,38 +88,6 @@ foreach ($Bloat in $Bloatware) {
 
     Write-Host "Finished Removing Bloatware Apps"
 
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-# Software installation for PCs in SPZOZ Parczew
-Write-Host "Installing chocolatey"
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-Update-SessionEnvironment
-
-Write-Host "Installation of software for computers in SPZOZ w Parczewie (No MSOffice, No NAPS2)"
-choco feature enable -n allowGlobalConfirmation
-#   Adobe Reader
-choco install adobereader
-#   Bandizip
-choco install bandizip
-#   MPV Player
-choco install mpv
-#   Thunderbird
-choco install thunderbird
-#   Firefox ESR
-choco install firefoxesr
-#   Firefox ESR
-choco install firefoxesr
-#   TightVNC
-choco install tightvnc
-#   LibreOffice Stable
-choco install libreoffice-still
-#   NAPS2
-#choco install naps2
-
-choco feature disable -n allowGlobalConfirmation
-
-Write-Host "Installation complete"
- 
 #--------------------------------------------------------------------------------------------------------------------------------------
  
 #   Add firewall rules
@@ -272,10 +191,8 @@ $services = @(
 Write-Host " Disabling unwatned Windows services"
 foreach ($service in $services) {
     # -ErrorAction SilentlyContinue is so it doesn't write an error to stdout if a service doesn't exist
-
     Write-Host "Setting $service StartupType to disabled"
     Get-Service -Name $service -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled
-
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -385,8 +302,9 @@ Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 # Set screensaver to active and 5 min with login set as required
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name ScreenSaveActive -Value 1
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name ScreenSaveTimeOut -Value 5
+Set-ItemProperty -Path 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop\' -Name ScreenSaveTimeOut -Value 5
+Set-ItemProperty -Path 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop\' -Name ScreenSaveActive -Value 1
+Set-ItemProperty -Path 'HKCU:\Software\Policies\Microsoft\Windows\Control Panel\Desktop\' -Name ScreenSaverIsSecure -Value 1
 Function Set-OnResumeDisplayLogon
 {
     Param ([Int32]$value)
@@ -402,45 +320,38 @@ net user administrator /active:yes
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-#Taskbar hide search button
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name SearchBoxTaskbarMode -Value 0 -Type DWord -Force
+# Software installation for PCs in SPZOZ Parczew
+Write-Host "Installing chocolatey"
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+Update-SessionEnvironment
 
+Write-Host "Installation of software for computers in SPZOZ w Parczewie (No MSOffice, No NAPS2)"
+choco feature enable -n allowGlobalConfirmation
+#   Adobe Reader
+choco install adobereader
+#   Bandizip
+choco install bandizip
+#   MPV Player
+choco install mpv
+#   Thunderbird
+choco install thunderbird
+#   Firefox ESR
+choco install firefoxesr
+#   Firefox ESR
+choco install firefoxesr
+#   TightVNC
+choco install tightvnc
+#   LibreOffice Stable
+choco install libreoffice-still
+#   NAPS2
+#choco install naps2
+
+choco feature disable -n allowGlobalConfirmation
+
+Write-Host "Installation complete"
+ 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-#Taskbar hide cortana button
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name ShowCortanaButton -Value 0 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-#Disable recent files history
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name Start_TrackDocs -Value 0 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-#Remove suggested apps
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name SystemPaneSuggestionsEnabled -Value 0 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-#Disable recently installed programs from start menu list
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name HideRecentlyAddedApps -Value 1 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-#Show all trray icons
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name EnableAutoTray -Value 0 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-# Checks for path, the Explorer is needed in Policies
-If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer")) {
-    New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Force | Out-Null
-}
-
-#Taskbar system icons
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name DisableNotificationCenter -Value 0 -Type DWord -Force
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Type DWord -Value 1
-
-#--------------------------------------------------------------------------------------------------------------------------------------
 # Create system backup on drive D
 wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 
@@ -450,7 +361,3 @@ wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 Get-NetAdapter
 Pause
 
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-# After all is done restart the PC
-Restart-Computer
