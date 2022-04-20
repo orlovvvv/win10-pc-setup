@@ -284,9 +284,8 @@ Write-Host "Pagefile on C deleted"
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-# Disalbe Autorun
-$path ='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\Explorer'
-Set-ItemProperty $path -Name NoDriveTypeAutorun -Type DWord -Value 0xFF
+# Disable Autorun
+New-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer -Name NoDriveTypeAutoRun  -value 255 -type Dword
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
