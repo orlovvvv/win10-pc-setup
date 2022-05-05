@@ -182,7 +182,7 @@ $services = @(
     "vmicheartbeat"
     "vmicvmsession"
     "vmicrdv"
-    "vmictimesync" 0000000000
+    "vmictimesync"
 )
 
 Write-Host " Disabling unwatned Windows services"
