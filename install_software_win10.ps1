@@ -20,7 +20,7 @@ $Bloatware = @(
     "Microsoft.Microsoft3DViewer"
     "Microsoft.MicrosoftSolitaireCollection"
     "Microsoft.NetworkSpeedTest"
-    "*News*"
+    "Microsoft.News*"
     "Microsoft.Office.Lens"
     "Microsoft.Office.Sway"
     "Microsoft.Office.OneNote"
@@ -78,7 +78,7 @@ $Bloatware = @(
     "*Photoshop*"
     "*Adobe*"
     "*HotspotShieldFreeVPN*"
-    "*Microsoft.Advertising.Xaml*"
+    "*Microsoft.Advertising*"
 )
 # Go through loop of bloatware to remove
 foreach ($Bloat in $Bloatware) {
@@ -167,10 +167,8 @@ $services = @(
     "cbdhsvc_48486de"                              #Disables   cbdhsvc_48486de (clipboard service it disables)
     "BluetoothUserService_48486de"                 #Disables BluetoothUserService_48486de (The Bluetooth user service supports proper functionality of Bluetooth features relevant to each user session.)
     "WpnService"                                   #Disables WpnService (Push Notifications may not work )
-    #"StorSvc"                                     #Disables StorSvc (usb external hard drive will not be reconised by windows)
     "RtkBtManServ"                                 #Disables Realtek Bluetooth Device Manager Service
     "QWAVE"                                        #Disables Quality Windows Audio Video Experience (audio and video might sound worse)
-     #Hp services just in case
     "HPAppHelperCap"
     "HPDiagsCap"
     "HPNetworkCap"
@@ -184,9 +182,7 @@ $services = @(
     "vmicheartbeat"
     "vmicvmsession"
     "vmicrdv"
-    "vmictimesync" 
-    # Services which cannot be disabled
-    #"WdNisSvc"
+    "vmictimesync" 0000000000
 )
 
 Write-Host " Disabling unwatned Windows services"
@@ -285,11 +281,6 @@ Write-Host "Pagefile on C deleted"
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-# Disable Autorun
-New-ItemProperty -Path HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer -Name NoDriveTypeAutoRun  -value 255 -type Dword
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
 # Remove unwanted default printers
 Remove-Printer -Name "Microsoft XPS Document Writer"
 Remove-Printer -Name "Fax"
@@ -301,10 +292,6 @@ Disable-NetAdapterBinding -Name "*" -ComponentID ms_tcpip6
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-# Set screensaver to active and 5 min with login set as required
-Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveTimeOut -Value 300
-Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaveActive -Value 1
-Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop\' -Name ScreenSaverIsSecure -Value 1
 #Taskbar hide search button
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name SearchBoxTaskbarMode -Value 0 -Type DWord -Force
 
@@ -315,19 +302,6 @@ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
-#Disable recent files history
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name Start_TrackDocs -Value 0 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-#Remove suggested apps
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name SystemPaneSuggestionsEnabled -Value 0 -Type DWord -Force
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-#Disable recently installed programs from start menu list
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name HideRecentlyAddedApps -Value 1 -Type DWord -Force
-#--------------------------------------------------------------------------------------------------------------------------------------
 
 # enable Administrator account
 net user administrator /active:yes
@@ -364,14 +338,17 @@ choco feature disable -n allowGlobalConfirmation
 
 Write-Host "Installation complete"
  
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-# Create system backup on drive D
-wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 
 # For getting the device MAC Address
 Get-NetAdapter
+
 Pause
+
+Restart-Computer
+#---------------------------------------------------WHAT-TO-DO-AFTER-SETUP-------------------------------------------------------------
+
+# Create system backup on drive D
+#wbAdmin start backup -backupTarget:D: -include:C: -allCritical -quiet
 
